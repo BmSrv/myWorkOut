@@ -70,11 +70,57 @@ public class CreateAccountController extends HttpServlet{
   - 값 받아오기
   ~~~
   String id = req.getParameter("id");
-		String password = req.getParameter("password");
-		String name = req.getParameter("passwordRe");
-		String email = req.getParameter("email");
-		String mobile = req.getParameter("mobile");
-		String address = req.getParameter("address");
+  String password = req.getParameter("password");
+  String name = req.getParameter("passwordRe");
+  String email = req.getParameter("email");
+  String mobile = req.getParameter("mobile");
+  String address = req.getParameter("address");
+  
+  UserDto user=new UserDto();
+  user.setId(id);
+  user.setPassword(password);
+  user.setName(name);
+  user.setEmail(email);
+  user.setMobile(mobile);
+  user.setAddress(address);
+		
   ~~~
-
+  
+  - DB 에 유저 정보 추가
+  ~~~
+  UserDao dao=UserDao.getInstance();
+  dao.insertSeller(user);
+  ~~~
+  
+  - dao.insertSeller(UserDto user)
+  ~~~
+  	/**
+	 * 유저(판매자) 정보 추가
+	 * @param user
+	 * @return
+	 * @author 정민상
+	 */
+	public UserDto insertSeller(UserDto user) {
+		SqlSession sqlsession = mybatis.Connection.getSession();
+		int affectedRows = sqlsession.insert("userInfoMapper.insertSeller", user);
+		
+		sqlsession.commit();
+		sqlsession.close();
+		
+		if(affectedRows < 1)
+			return null;
+		
+		return user;
+	}
+  ~~~
+  
+  - userInfoMapper.insertSeller 설정
+  
+  ~~~
+<!-- 유저(판매자) 정보 추가 -->
+	<insert id="insertSeller" parameterType="dto.UserDto" useGeneratedKeys="true" keyProperty="num">
+		INSERT INTO WorkOutUser (id, password, name, email, mobile, address, userType)
+			VALUES(#{id}, #{password}, #{name}, #{email}, #{mobile}, #{address},'seller');
+	</insert>	
+  ~~~
 
