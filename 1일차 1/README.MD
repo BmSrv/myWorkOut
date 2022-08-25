@@ -1,3 +1,6 @@
+# 중요! 아래 기본 UI 세팅은 3일차에서 갈아엎었습니다!
+
+
 # 기본 UI 세팅
   - 기본 헤더 
 ![image](https://user-images.githubusercontent.com/106857769/186197425-e1195e3b-eeb1-47a1-9ac5-dd3e2119e00d.png)
