@@ -42,3 +42,118 @@
 </layout:seller>
 
 ~~~
+
+# AddProductReqController.java
+ - 요청이 정상적으로 이루어진 후 alert 와 메인페이지로 이동
+~~~
+package controllers.seller;
+
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import models.seller.AddProductService;
+import static jmsUtil.Utils.*;
+
+@WebServlet("/seller/addProductReq")
+public class AddProductReqController extends HttpServlet{
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		RequestDispatcher rd =req.getRequestDispatcher("/jmsPage/addProductReq.jsp");
+		rd.forward(req, resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		req.setCharacterEncoding("UTF-8");
+		
+		try {
+			
+			AddProductService service=new AddProductService();
+			service.addProduct(req);
+			showAlert(resp, "상품요청이 이루어졌습니다.");
+			replacePage(resp, req.getContextPath()+"/seller", "parent");
+			
+		} catch (Exception e) {
+			showAlertException(resp, e);
+			e.printStackTrace();
+		}
+	}
+}
+
+~~~
+
+# AddProductService
+ - 미 로그인시 예외처리
+ ~~~
+ HttpSession session=req.getSession();
+ UserDto user=(UserDto)session.getAttribute("member");
+ if (user==null) {
+   throw new RuntimeException("로그인 후 사용해 주세요");
+ }
+ ~~~
+ 
+ - 요청 상품을 추가 할때 session 에서 로그인 정보를 가져와 추가하려는 상품(ProductDto.seller) 에 값을 추가한다(판매자의 id)
+ ~~~
+ 	HttpSession session=req.getSession();
+	UserDto user=(UserDto)session.getAttribute("member");
+			(생략)
+	ProductDto product=new ProductDto();
+			(생략)
+	product.setSeller(user.getId());
+ ~~~
+ 
+ - AddProductService 전반
+ 
+ ~~~
+package models.seller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import com.mysql.cj.Session;
+
+import dto.UserDto;
+
+public class AddProductService {
+	public void addProduct(HttpServletRequest req) {
+		/**
+		 * 값받아오기
+		 */
+		HttpSession session=req.getSession();
+		UserDto user=(UserDto)session.getAttribute("member");
+		if (user==null) {
+			throw new RuntimeException("로그인 후 사용해 주세요");
+		}
+		
+		String serialnum =req.getParameter("serialnum");
+		String name=req.getParameter("name");
+		String price=req.getParameter("price");
+		String kategorie=req.getParameter("kategorie");
+		String company=req.getParameter("company");
+		String img=req.getParameter("img");
+		
+		ProductDto product=new ProductDto();
+		product.setSerialnum(serialnum);
+		product.setName(name);
+		product.setPrice(Integer.parseInt(price));
+		product.setKategorie(kategorie);
+		product.setCompany(company);
+		product.setImg(img);
+		product.setSeller(user.getId());
+		SellerDao dao=SellerDao.getInstance();
+		
+		dao.register(product);
+		
+		
+	}
+}
+
+ 
+ ~~~
+ 
