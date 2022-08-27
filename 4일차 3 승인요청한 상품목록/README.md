@@ -151,5 +151,80 @@ HttpSession session=req.getSession();
 		}
 ~~~
 
+- 로그인 정보 가져오기
+~~~
+HttpSession session=req.getSession();
+UserDto userDto=(UserDto)session.getAttribute("member");
+		
+String seller=userDto.getId();
+		
+~~~
 
+- status 값 가져오기
+~~~
+String status=req.getParameter("status");
+
+~~~
+
+- DB에 접속하여 List 가져오기
+~~~
+ProductDto product=new ProductDto();
+product.setSeller(seller);
+product.setStatus(status);
+		
+dao.getProductList(product);
+~~~
+
+- myProduct.jsp 에 list 넘겨주기(MyProductController)
+~~~
+List<ProductDto> list =service.getlist(req);
+req.setAttribute("list", list);
+RequestDispatcher rd =req.getRequestDispatcher("/jmsPage/myProduct.jsp");
+rd.forward(req, resp);
+~~~
+# GetProductListService 전반
+~~~
+package models.seller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static jmsUtil.Utils.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import dto.UserDto;
+
+public class GetProductListService {
+	public List<ProductDto> getlist(HttpServletRequest req){
+		showParaMap(req);
+		
+		Map<String, String> check=new HashMap<>();
+		check.put("status", "잘못된 요청 입니다.");
+		
+		ckNullParaMap(req,check);
+		
+		HttpSession session=req.getSession();
+		UserDto userDto=(UserDto)session.getAttribute("member");
+		
+		if (userDto==null) {
+			throw new LoginException();
+		}
+		
+		SellerDao dao=SellerDao.getInstance();
+		
+		String seller=userDto.getId();
+		String status=req.getParameter("status");
+		
+		ProductDto product=new ProductDto();
+		product.setSeller(seller);
+		product.setStatus(status);
+		
+		return dao.getProductList(product);
+	}
+}
+
+~~~
 
