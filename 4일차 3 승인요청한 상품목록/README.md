@@ -175,6 +175,27 @@ product.setStatus(status);
 dao.getProductList(product);
 ~~~
 
+- requestProductMapper 설정
+~~~
+<select id="getlist" parameterType="models.seller.ProductDto" resultMap="productmap">
+	SELECT * FROM RequestProduct WHERE seller=#{seller} AND status=#{status};
+</select>
+~~~
+
+- SellerDao
+~~~
+	public List<ProductDto> getProductList(ProductDto product) {
+		SqlSession session=Connection.getSession();
+		
+		List<ProductDto> list=session.selectList("RequestProductMap.getlist",product);
+		
+		return list;
+	}
+~~~
+
+
+
+
 - myProduct.jsp 에 list 넘겨주기(MyProductController)
 ~~~
 List<ProductDto> list =service.getlist(req);
